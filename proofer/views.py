@@ -7,9 +7,8 @@ def post_list(request):
 		proofs = ProofForm(request.POST)
 		if proofs.is_valid():
 			proof = proofs.save(commit=False)
-			if proof.premise == "Long have we waited":
-				proof.premise += " now we jebaited"
-			proof.save()
+			proof.check_proof()
+			proof.prove()
 			proofs = ProofForm(instance=proof)
 	else:
 		proofs = ProofForm()
