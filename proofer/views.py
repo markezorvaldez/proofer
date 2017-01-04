@@ -7,8 +7,8 @@ def post_list(request):
 		proofs = ProofForm(request.POST)
 		if proofs.is_valid():
 			proof = proofs.save(commit=False)
-			proof.premise += " el kappa lul jebaited"
-			#proof.proof = proofs.proof
+			if proof.premise == "Long have we waited":
+				proof.premise += " now we jebaited"
 			proof.save()
 			proofs = ProofForm(instance=proof)
 	else:
