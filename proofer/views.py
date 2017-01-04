@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from .models import Proof
 
-# Create your views here.
+def post_list(request):
+	proofs = Proof.objects.all()
+	return render(request, 'proofer/post_list.html', {'proofs': proofs})
