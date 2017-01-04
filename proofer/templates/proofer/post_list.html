@@ -1,10 +1,8 @@
 {% extends 'proofer/base.html' %}
 
 {% block content %}
-	{% for proofe in proofs %}
-		<div class="proof">
-        	<h1><a href="">{{ proofe.premise }}</a></h1>
-        	<p>{{ proofe.proof|linebreaksbr }}</p>
-    	</div>
-	{% endfor %}
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ proofs.as_p }}
+        <button type="submit" class="save btn btn-default">Process</button>
+    </form>
 {% endblock %}
