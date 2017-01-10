@@ -9,5 +9,5 @@ class Proof(models.Model):
 		self.save()
 
 	def check_proof(self):
-		if self.premise == "Long have we waited":
-			self.premise += " now we jebaited LUL"
+		if ((self.premise == "A and B => A") and (self.proof != ("assume A and B" + "\n" + "A"))):
+			self.proof += " INCORRECT PROOF"
