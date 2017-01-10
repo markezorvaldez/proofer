@@ -66,7 +66,7 @@ precedence = (
 
 # dictionary of names
 names = { }
-output = { }
+output = ""
 
 def p_statement_assign(t):
     'statement : NAME EQUALS expression'
@@ -75,7 +75,8 @@ def p_statement_assign(t):
 def p_statement_expr(t):
     'statement : expression'
     print(t[1])
-    output[0] = t[1]
+    global output
+    output = t[1]
 
 def p_expression_binop(t):
     '''expression : expression OR expression
@@ -111,13 +112,6 @@ def p_error(t):
 import ply.yacc as yacc
 localparser = yacc.yacc()
 
-while 1:
-    try:
-        s = raw_input('calc > ')
-    except EOFError:
-        break
-    if not s:
-        continue
+def parse_proof(s):
     localparser.parse(s)
-    print(output[0])
-
+    return(output)
