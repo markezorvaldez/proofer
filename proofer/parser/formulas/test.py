@@ -35,6 +35,21 @@ def testAndFormulaInfers3():
 	print("A * B * C infers B * A?")
 	print(abc.infers(ba))
 
+def testAndFormulaInfers4():
+	a = nat.Formula("A")
+	b = nat.Formula("B")
+	c = nat.Formula("C")
+	ab = nat.AndFormula(a, b)
+	ac = nat.AndFormula(a, c)
+
+	print("AB infers AC?")
+	print(ab.infers(ac))
+	# print(ac.infers(ab))
+	print([f.__str__() for f in ab.eliminationList()])
+	print([f.__str__() for f in ac.eliminationList()])
+
+print("---------------------------     TEST     ------------------------")
 testAndFormulaInfers1()
 testAndFormulaInfers2()
 testAndFormulaInfers3()
+testAndFormulaInfers4()

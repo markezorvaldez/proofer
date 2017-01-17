@@ -16,9 +16,11 @@ class Formula:
 		return self.formula
 
 	def __eq__(self, other):
-		return self.canProve(other)
+		print(self.__str__() + " is equal to " + other.__str__())
+		return self.__str__() == other.__str__()
+		# return self.canProve(other)
 
-	def canProve(self, formula):
+	def infers(self, formula):
 		# print("canProve")
 		# print(self)
 		# print(formula)
@@ -39,11 +41,49 @@ class AndFormula(Formula):
 	def __str__(self):
 		return ' * '.join(f.__str__() for f in self.formulas)
 
-	def canProve(self, formula):
-		result = False
-		for f in self.formulas:
-			result = result or f.canProve(formula)
-		return result
+	def __eq__(self, other):
+		try:
+			left = list(self.formulas)
+			right = list(other.formulas)
+			try:
+				for rightFormula in right:
+					left.remove(rightFormula)
+			except ValueError:
+				# print("Value error")
+				return False
+			# print(left)
+			return not left
+			# print(self.__str__() + " equal " + other.__str__())
+			# print(self.formulas)
+			# print(other.formulas)
+
+			# result = left == right
+			# print(result)
+			# return result
+		except AttributeError:
+			# print("Attribute error")
+			return False
+
+		# print(self.__str__() + " equal " + other.__str__())
+		# try:
+		# 	result = set(self.formulas) == set(other.formulas) #lists are not hashable so i cannot do dis
+
+		# 	print("SAME TYPE BUT RESULT IS " + result)
+		# 	return result
+		# except TypeError:
+		# 	print("TypeError")
+		# 	print(self.__str__() + " type is " + str(type(self)))
+		# 	print(other.__str__() + " type is " + str(type(other)))
+
+		# 	return False
+
+	# def canProve(self, formula):
+		# print("ASDL;KFJAL;SKDFJLKASDJFAL;KSDJF;ALSDF")
+		# this is being called when infers is being called
+		# result = False
+		# for f in self.formulas:
+			# result = result or f.canProve(formula)
+		# return result
 
 	def infers(self, formula):
 		return formula in self.eliminationList()
