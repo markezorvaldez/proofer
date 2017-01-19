@@ -6,6 +6,16 @@ if sys.version_info[0] >= 3:
     raw_input = input
 
 
+def listOfAtoms(formulaObj):
+	result = []
+	if not type(formulaObj) is AndFormula:
+		result.append(formulaObj)
+		return result
+	for f in formulaObj.formulas:
+		result.extend(listOfAtoms(f))
+	return result
+
+
 class Formula:
 	"""Formula object representing an atom through a character."""
 
@@ -29,7 +39,11 @@ class AndFormula(Formula):
 	"""
 
 	def __init__(self, *formulas):
-		self.formulas = list(formulas)
+		listFormula = []
+		for f in list(formulas):
+			listFormula.extend(listOfAtoms(f))
+		
+		self.formulas = listFormula
 
 	def __str__(self):
 		return ' * '.join(f.__str__() for f in self.formulas)
