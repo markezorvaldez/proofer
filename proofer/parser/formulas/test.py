@@ -1,12 +1,10 @@
 import sys
+import unittest
 import naturaldeduction as nat
 
-sys.path.insert(0, "../..")
+class TestFormulaObjects(unittest.TestCase):
+	"""Test suite for testing formula objects and its derivatives."""
 
-if sys.version_info[0] >= 3:
-    raw_input = input
-
-def testAndFormula():
 	a = nat.Formula("A")
 	b = nat.Formula("B")
 	c = nat.Formula("C")
@@ -22,42 +20,39 @@ def testAndFormula():
 	abcd1 = nat.AndFormula(a, b, c, d)
 	abcd2 = nat.AndFormula(ab, cd)
 	abcd3 = nat.AndFormula(abc, d)
-
-	print("AB infers A?")
-	print(ab.infers(a))
-
-	print("ABC infers AB?")
-	print(abc.infers(ab))
-
-	print("ABC infers BA?")
-	print(abc.infers(ba))
-
-	print("AB infers AC?")
-	print(ab.infers(ac))
-
-	print("AC infers AB?")
-	print(ac.infers(ab))
-
-	print("AC infers AC?")
-	print(ac.infers(ac))
-
-	print("AC infers CA?")
-	print(ac.infers(ca))
-
-	print("ABC infers ABCD?")
-	print(abc.infers(abcd1))
-
-	print("AB * CD infers ABCD?")
-	print(abcd2.infers(abcd1))
-
-	print("ABC * D infers ABCD?")
-	print(abcd3.infers(abcd1))
-
-	print("AB * CD infers ABC * D?")
-	print(abcd2.infers(abcd3))
+	abcd4 = nat.AndFormula(ab, c, d)
 
 
+	def test_ab_infers_a(self):
+		self.assertTrue(self.ab.infers(self.a))
 
-print("---------------------------     TEST     ------------------------")
+	def test_abc_infers_ab(self):
+		self.assertTrue(self.abc.infers(self.ab))
 
-testAndFormula()
+	def test_abc_infers_ba(self):
+		self.assertTrue(self.abc.infers(self.ba))
+
+	def test_ab_not_infers_ac(self):
+		self.assertFalse(self.ab.infers(self.ac))
+
+	def test_ac_not_infers_ab(self):
+		self.assertFalse(self.ac.infers(self.ab))
+
+	def test_ac_infers_ac(self):
+		self.assertTrue(self.ac.infers(self.ac))
+
+	def test_ac_infers_ca(self):
+		self.assertTrue(self.ac.infers(self.ca))
+		self.assertTrue(self.ca.infers(self.ac))
+
+	def test_abc_not_infers_abcd(self):
+		self.assertFalse(self.abc.infers(self.abcd1))
+
+	def test_abcd_andformula_variations_infers_abcd(self):
+		self.assertTrue(self.abcd2.infers(self.abcd1))
+		self.assertTrue(self.abcd3.infers(self.abcd1))
+		self.assertTrue(self.abcd2.infers(self.abcd3))
+		self.assertTrue(self.abcd3.infers(self.abcd4))
+
+if __name__ == '__main__':
+	unittest.main()
