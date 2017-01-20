@@ -3,10 +3,8 @@ PLY_PATH = "/Users/mark/ply-3.9/"
 import sys
 sys.path.insert(0, "../..")
 sys.path.append(PLY_PATH)
-
 if sys.version_info[0] >= 3:
     raw_input = input
-
 tokens = (
     'NAME','NUMBER',
     'OR','AND', 'IMPLIES', 'NEG','EQUALS',

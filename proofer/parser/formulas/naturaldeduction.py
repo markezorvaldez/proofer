@@ -36,9 +36,9 @@ class Formula:
 
 class AndFormula(Formula):
 	"""Formula object representing a conjunction. It is also used to create
-	one massive formula when each formula is proved. I.e., when A is proved
-	and B is proved, a AndFormula object is constructed which will be used
-	to prove the next line in the proof.
+	one massive formula when each formula is proved. I.e., if A is proved, then
+	B is proved, then an next = AndFormula(A, B) would be constructed. If C is
+	then proved, then next = AndFormula(next, C).
 	"""
 
 	def __init__(self, *formulas):
@@ -51,6 +51,9 @@ class AndFormula(Formula):
 	def __str__(self):
 		return ' * '.join(f.__str__() for f in self.formulas)
 
+	def __hash__(self):
+		return sum([form.__hash__() for form in self.formulas])
+
 	def __eq__(self, other):
 		try:
 			left = list(self.formulas)
@@ -61,12 +64,20 @@ class AndFormula(Formula):
 			except ValueError:
 				return False
 			return not left
-
 		except AttributeError:
 			return False
 
 	def infers(self, formula):
-		return formula in self.eliminationList()
+		'''
+		Validation of a proof. 
+		'''
+		# append implementations of intro validation here per type of formula
+		# E.g, self.infers(A->B), self.infers(A + B), self.infers(~A)
+		if (type(formula) is AndFormula) or (type(formula) is Formula):
+			return formula in self.eliminationList()
+		return False
+		# if type(formula) is ImpFormula:
+			# write implementation here about assumption
 
 	def eliminationList(self):
 		result = self.formulas[:]
@@ -76,4 +87,27 @@ class AndFormula(Formula):
 			for f in combinations(self.formulas, L):
 				result.append(AndFormula(*f))
 
+		# might have a problem here when having imp within imp
+		# implies elimination here
+		for impFormula in result:
+			if type(impFormula) is ImpFormula and impFormula.left in result:
+				result.append(impFormula.right)
 		return result
+
+class ImpFormula(Formula):
+
+	def __init__(self, left, right):
+		self.left = left
+		self.right = right
+
+	def __str__(self):
+		return ' -> '.join([left.__str__(), right.__str()])
+
+	def __hash__(self):
+		return self.left.__hash__() + self.right.__hash__()
+
+	def __eq__(self, other):
+		try:
+			return self.left == other.left and self.right == other.right
+		except AttributeError:
+			return False

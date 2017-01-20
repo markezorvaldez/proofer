@@ -1,5 +1,6 @@
 from django.db import models
-from proofer.parser.parser import parse_premise
+# from proofer.parser.parser import parse_premise
+from proofer.parser.proof_parser import parse_premise
 #from proofer.parser.proof_parser import parse_proof
 
 class Proof(models.Model):
