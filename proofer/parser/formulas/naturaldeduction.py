@@ -1,5 +1,5 @@
 import sys
-from itertools import combinations
+from itertools import combinations, groupby
 sys.path.insert(0, "../..")
 
 if sys.version_info[0] >= 3:
@@ -28,6 +28,9 @@ class Formula:
 	def __eq__(self, other):
 		return self.__str__() == other.__str__()
 
+	def __hash__(self):
+		return ord(self.formula)
+
 	def infers(self, formula):
 		return self.__str__() == formula.__str__()
 
@@ -42,8 +45,8 @@ class AndFormula(Formula):
 		listFormula = []
 		for f in list(formulas):
 			listFormula.extend(listOfAtoms(f))
-		
-		self.formulas = listFormula
+
+		self.formulas = list(set(listFormula))
 
 	def __str__(self):
 		return ' * '.join(f.__str__() for f in self.formulas)

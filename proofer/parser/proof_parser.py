@@ -1,6 +1,7 @@
 PLY_PATH = "/Users/mark/ply-3.9/"
 
 import sys
+from formulas.naturaldeduction import Formula, AndFormula
 sys.path.insert(0, "../..")
 sys.path.append(PLY_PATH)
 
@@ -8,30 +9,18 @@ if sys.version_info[0] >= 3:
     raw_input = input
 
 tokens = (
-    'NAME','NUMBER',
-    'OR','AND', 'IMPLIES', 'NEG','EQUALS',
+    'ATOM',
+    'AND',
     'LPAREN','RPAREN',
     )
 
 # Tokens
 
-t_OR      = r'\+'
 t_AND     = r'\*'
-t_IMPLIES = r'->'
-t_NEG     = r'~'
-t_EQUALS  = r'='
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
-t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
+t_ATOM    = r'[a-zA-Z_]'
 
-def t_NUMBER(t):
-    r'\d+'
-    try:
-        t.value = int(t.value)
-    except ValueError:
-        print("Integer value too large %d", t.value)
-        t.value = 0
-    return t
 
 # Ignored characters
 t_ignore = " \t"
@@ -51,53 +40,61 @@ lexer = lex.lex()
 # Parsing rules
 
 precedence = (
-    ('right', 'IMPLIES'),
-    ('left','OR'),
     ('left','AND'),
-    ('right', 'NEG'),
     )
 
 # dictionary of names
-names = { }
-output = ""
+atoms = { }
+andFormula = None
 
-def p_statement_assign(t):
-    'statement : NAME EQUALS expression'
-    names[t[1]] = t[3]
 
 def p_statement_expr(t):
     'statement : expression'
+    global andFormula
+    andFormula = t[1]
     print(t[1])
-    global output
-    output = t[1]
+    # print("general statement")
 
-def p_expression_binop(t):
-    '''expression : expression OR expression
-                  | expression AND expression
-                  | expression IMPLIES expression'''
-    if t[2] == '+'   : t[0] = t[1] | t[3]
-    elif t[2] == '*' : t[0] = t[1] & t[3]
-    elif t[2] == '->': t[0] = (~t[1] & 1) | t[3]
 
-def p_expression_uneg(p):
-    "expression : NEG expression %prec NEG"
-    p[0] = ~p[2] & 1
+def p_expression_atom(t):
+    # NEED TO APPEND FORMULA TO ANDFORMULA
+    'expression : ATOM'
+    try:
+        form = atoms[t[1]]
+        t[0] = AndFormula(andFormula, form)
+    except LookupError:
+        if andFormula is not None:
+            print("can not prove")
+            t[0] = andFormula
+        else:
+            atoms[t[1]] = Formula(t[1])
+            t[0] = atoms[t[1]]
+            # print("created atom")
+
+def p_expression_andformula(t):
+    'expression : expression AND expression'
+    newAndFormula = AndFormula(t[1], t[3])
+    # print(andFormula)
+    # print(newAndFormula)
+    if andFormula is None:
+        # print("andformula is none")
+        t[0] = newAndFormula
+    elif andFormula.infers(newAndFormula):
+        # print("AndFormula infers")
+        t[0] = AndFormula(andFormula, newAndFormula)
+    else:
+        # print(andFormula.infers(newAndFormula))
+        # print(t[1])
+        # print(t[2])
+        # print(t[3])
+        print("cannot prove")
+        t[0] = andFormula
 
 def p_expression_group(t):
     'expression : LPAREN expression RPAREN'
+    # print("brackets")
+    # print(t[2])
     t[0] = t[2]
-
-def p_expression_number(t):
-    'expression : NUMBER'
-    t[0] = t[1]
-
-def p_expression_name(t):
-    'expression : NAME'
-    try:
-        t[0] = names[t[1]]
-    except LookupError:
-        print("Undefined name '%s'" % t[1])
-        t[0] = 0
 
 def p_error(t):
     print("Syntax error at '%s'" % t.value)
@@ -107,4 +104,13 @@ localparser = yacc.yacc()
 
 def parse_premise(s):
     localparser.parse(s)
-    return(output)
+    return(andFormula)
+
+while 1:
+    try:
+        s = raw_input('proof > ')
+    except EOFError:
+        break
+    if not s:
+        continue
+    localparser.parse(s)
