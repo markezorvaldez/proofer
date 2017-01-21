@@ -23,7 +23,6 @@ class TestFormulaObjects(unittest.TestCase):
 	abcd4 = nat.AndFormula(ab, c, d)
 	dab = nat.AndFormula(d, a, b)
 
-
 	def test_ab_infers_a(self):
 		self.assertTrue(self.ab.infers(self.a))
 
@@ -57,5 +56,15 @@ class TestFormulaObjects(unittest.TestCase):
 	 
 	def test_dab(self):
 		self.assertTrue(self.abcd1.infers(self.dab))
+
+	def test_proof(self):
+		proof = nat.Proof(self.abcd1)
+		self.assertTrue(proof.infers(self.abc))
+
+	# def test_proof(self):
+		# bIc = nat.ImpFormula(self.b, self.c)
+		# proof = nat.Proof(bIc)
+
+
 if __name__ == '__main__':
 	unittest.main()
