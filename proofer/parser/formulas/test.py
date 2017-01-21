@@ -61,9 +61,15 @@ class TestFormulaObjects(unittest.TestCase):
 		proof = nat.Proof(self.abcd1)
 		self.assertTrue(proof.infers(self.abc))
 
-	# def test_proof(self):
-		# bIc = nat.ImpFormula(self.b, self.c)
-		# proof = nat.Proof(bIc)
+	def test_implies(self):
+		bIc = nat.ImpFormula(self.b, self.c)
+		aIbIc = nat.ImpFormula(self.a, bIc)
+		print("making proof")
+		proof = nat.Proof(self.ab, conjunction = [aIbIc])
+		self.assertTrue(proof.infers(self.a))
+		self.assertTrue(proof.infers(bIc))
+		self.assertTrue(proof.infers(self.b))
+		self.assertTrue(proof.infers(self.c))
 
 
 if __name__ == '__main__':
