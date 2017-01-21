@@ -23,31 +23,27 @@ class Proof:
 	so on
 	'''
 
-	def __init__(self, *assumptions, conjunction = [], lineNumber=1):
+	def __init__(self, *assumptions, conjunction = [], goal = None, lineNum=1):
 		self.ass = list(assumptions)
 		self.numToForm = {n:f for (n,f) in \
-		zip(range(lineNumber, len(self.ass)+1), self.ass)}
+		zip(range(lineNum, len(self.ass)+1), self.ass)}
 		vals = list(self.numToForm.values())
 		vals.extend(conjunction)
 		self.conjunction = AndFormula(*(vals))
 		# print("created proof conjunction")
 		# print(self.conjunction.__str__())
 
+		self.goal = goal
+
 	def infers(self, formula):
-		# print('infering')
-		# print(formula.__str__())
 		result = self.conjunction.infers(formula)
-		# print("infers 1")
-		# print(self.conjunction.__str__())
 		if result:
 			self.numToForm[list(self.numToForm.keys())[-1]] = formula
-			# self.conjunction = AndFormula(*(self.numToForm.values()))
-		# print("infered 2")
-		# print(self.conjunction.__str__())
 
 		return result
 
-
+	def proves(self, formula):
+		return formula.left in self.ass and formula.right in self.conjunction.eliminationList()
 
 
 class AndFormula(Proof):
@@ -91,18 +87,8 @@ class AndFormula(Proof):
 		'''
 		# append implementations of intro validation here per type of formula
 		# E.g, self.infers(A->B), self.infers(A + B), self.infers(~A)
-		# if (type(formula) is AndFormula) or (type(formula) is Formula):
-		# 	return formula in self.eliminationList()
-		# elif type(formula) is ImpFormula:
-		# 	e = self.eliminationList()
-		# 	return (formula.left in e) and \
-		# 	(formula.right in e)
-		# if type(formula) is ImpFormula:
-			# print([x.__str__() for x in self.eliminationList()])
 		return formula in self.eliminationList()
-		# if type(formula) is ImpFormula:
-		# reurn assumption == formula.left and formula.right in eliminationList
-			# write implementation here about assumption
+
 
 	def eliminationList(self):
 		result = self.formulas[:]
@@ -115,12 +101,7 @@ class AndFormula(Proof):
 		# might have a problem here when having imp within imp
 		# implies elimination here
 		for impFormula in result:
-			# if type(impFormula) is ImpFormula:
-				# print('IMPLIES FORMULA IS')
-				# print(impFormula.__str__())
 			if type(impFormula) is ImpFormula and impFormula.left in result:
-				# print("appending")
-				# print(impFormula.right.__str__())
 				result.append(impFormula.right)
 		return result
 
