@@ -26,13 +26,10 @@ class Proof:
 	def __init__(self, *assumptions, conjunction = [], goal = None, lineNum=1):
 		self.ass = list(assumptions)
 		self.numToForm = {n:f for (n,f) in \
-		zip(range(lineNum, len(self.ass)+1), self.ass)}
+			zip(range(lineNum, len(self.ass)+1), self.ass)}
 		vals = list(self.numToForm.values())
 		vals.extend(conjunction)
 		self.conjunction = AndFormula(*(vals))
-		# print("created proof conjunction")
-		# print(self.conjunction.__str__())
-
 		self.goal = goal
 
 	def infers(self, formula):
@@ -40,9 +37,12 @@ class Proof:
 		if result:
 			self.numToForm[list(self.numToForm.keys())[-1]] = formula
 
+
 		return result
 
 	def proves(self, formula):
+		print([f.__str__() for f in self.conjunction.eliminationList()])
+		# only works for implies formula
 		return formula.left in self.ass and formula.right in self.conjunction.eliminationList()
 
 
@@ -55,7 +55,6 @@ class AndFormula(Proof):
 	"""
 
 	def __init__(self, *formulas):
-		self.ass = list(formulas)
 		listFormula = []
 		for f in list(formulas):
 			listFormula.extend(listOfAtoms(f))
@@ -130,13 +129,12 @@ class ImpFormula(Proof):
 		self.right = right
 
 	def __str__(self):
-		return ' -> '.join([self.left.__str__(), self.right.__str__()])
+		return '('+' -> '.join([self.left.__str__(), self.right.__str__()])+')'
 
 	def __hash__(self):
 		return self.left.__hash__() + self.right.__hash__()
 
 	def __eq__(self, other):
-		# print(self.__str__())
 		try:
 			return (self.left == other.left) and (self.right == other.right)
 		except AttributeError:
