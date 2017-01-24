@@ -45,9 +45,14 @@ class Proof:
 		result = self.conjunction.infers(formula)
 		if result:
 			self.numToForm[list(self.numToForm.keys())[-1]] = formula
-			if result == self.goal:
-				parent.conjunction.append(\
-					ImpFormula(AndFormula(*self.ass), self.goal))
+			if formula == self.goal:
+				print("we here for " + formula.__str__())
+				newForm = ImpFormula(AndFormula(*self.ass), self.goal)
+				try:
+					self.parent.conjunction.append(newForm)
+					self.parent.conjunction.appendElim(newForm)
+				except AttributeError:
+					pass
 		return result
 
 	def proves(self, formula):
@@ -124,7 +129,8 @@ class AndFormula(Proof):
 		'''
 
 		f = listOfAtoms(formula)
-		self.eliminationList.extend(x for x in f if x not in self.formulas)
+		self.eliminationList.extend(x for x in f \
+			if x not in self.eliminationList)
 
 	def infers(self, formula):
 		'''
@@ -145,7 +151,7 @@ class AndFormula(Proof):
 		for f in self.eliminationList:
 			if type(f) is ImpFormula and f.left in self.eliminationList:
 				self.appendElim(f.right)
-				if formula is f.right:
+				if formula == f.right:
 					self.append(formula)
 					return True
 				# check now if formula in elimList
