@@ -15,21 +15,6 @@ def listOfAtoms(formulaObj):
 		result.extend(listOfAtoms(f))
 	return result
 
-def eliminationList(formulas):
-	result = formulas[:]
-	result.append(self)
-	max_len = len(self.formulas)
-	for L in range(2, max_len):
-		for f in combinations(self.formulas, L):
-			result.append(AndFormula(*f))
-
-	# might have a problem here when having imp within imp
-	# implies elimination here
-	for impFormula in result:
-		if type(impFormula) is ImpFormula and impFormula.left in result:
-			result.append(impFormula.right)
-	return result
-
 class Proof:
 	'''
 	Constructed with assumptions as a conjunction. Then for each formula line,
@@ -38,7 +23,7 @@ class Proof:
 	so on.
 	'''
 
-	def __init__(self, *assumptions, conjunction = [], goal = None, lineNum=1):
+	def __init__(self, *assumptions, parent = None, goal = None, lineNum = 1):
 		'''
 		Initialises a proof object with a list of assumptions and a goal.
 		If the proof is within some proof, then the conjunction of the outside
@@ -46,11 +31,13 @@ class Proof:
 		'''
 
 		self.ass = list(assumptions)
+		self.parent = parent
 		self.numToForm = {n:f for (n,f) in \
 			zip(range(lineNum, len(self.ass)+1), self.ass)}
-		vals = list(self.numToForm.values())
-		vals.extend(conjunction)
-		self.conjunction = AndFormula(*(vals))
+		try:
+			self.conjunction = AndFormula(*self.ass, parent.conjunction)
+		except AttributeError:
+			self.conjunction = AndFormula(*self.ass)
 		self.lineNum = len(self.ass)
 		self.goal = goal
 
@@ -58,8 +45,9 @@ class Proof:
 		result = self.conjunction.infers(formula)
 		if result:
 			self.numToForm[list(self.numToForm.keys())[-1]] = formula
-
-
+			if result == self.goal:
+				parent.conjunction.append(\
+					ImpFormula(AndFormula(*self.ass), self.goal))
 		return result
 
 	def proves(self, formula):
@@ -67,6 +55,10 @@ class Proof:
 		return formula.left in self.ass and formula.right in \
 			self.conjunction.eliminationList
 
+	# think of an architecture of nesting proofs
+	# can do observer 
+	# def assumption(self, proof):
+		
 
 class AndFormula(Proof):
 	'''

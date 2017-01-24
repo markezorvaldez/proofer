@@ -65,20 +65,31 @@ class TestFormulaObjects(unittest.TestCase):
 		bIc = nat.ImpFormula(self.b, self.c)
 		aIbIc = nat.ImpFormula(self.a, bIc)
 
-		proof = nat.Proof(self.ab, conjunction = [aIbIc])
+		proof1 = nat.Proof(aIbIc)
+		
+		proof = nat.Proof(self.ab, parent = proof1)
 		self.assertTrue(proof.infers(self.a))
 		self.assertTrue(proof.infers(bIc))
+
 		self.assertTrue(proof.infers(self.b))
+
 		self.assertTrue(proof.infers(self.c))
-		print(proof.conjunction)
+
+		# print(proof.conjunction)
 		abIc = nat.ImpFormula(self.ab, self.c)
 		aibIc = nat.ImpFormula(self.a, self.bc)
 		self.assertTrue(proof.proves(abIc))
 		self.assertFalse(proof.proves(aibIc))
 
-		print("ADKJFAL;SDKFJA;SDFLASDFJ")
-		proof2 = nat.Proof(aIbIc)
-		self.assertTrue(proof2.proves(abIc))
+		# proof2 = nat.Proof(aIbIc)
+		# self.assertTrue(proof2.proves(abIc))
+
+	def test_implies2(self):
+		bIc = nat.ImpFormula(self.b, self.c)
+		aIbIc = nat.ImpFormula(self.a, bIc)
+		abIc = nat.ImpFormula(self.ab, self.c)
+		proof1 = nat.Proof(aIbIc, goal = abIc)
+
 
 if __name__ == '__main__':
 	unittest.main()
