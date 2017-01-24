@@ -15,21 +15,43 @@ def listOfAtoms(formulaObj):
 		result.extend(listOfAtoms(f))
 	return result
 
+def eliminationList(formulas):
+	result = formulas[:]
+	result.append(self)
+	max_len = len(self.formulas)
+	for L in range(2, max_len):
+		for f in combinations(self.formulas, L):
+			result.append(AndFormula(*f))
+
+	# might have a problem here when having imp within imp
+	# implies elimination here
+	for impFormula in result:
+		if type(impFormula) is ImpFormula and impFormula.left in result:
+			result.append(impFormula.right)
+	return result
+
 class Proof:
 	'''
 	Constructed with assumptions as a conjunction. Then for each formula line,
 	the Proof object will check if it infers the formula from assumption and if
 	true, joins it with the previous conjuction to make another conjuction and
-	so on
+	so on.
 	'''
 
 	def __init__(self, *assumptions, conjunction = [], goal = None, lineNum=1):
+		'''
+		Initialises a proof object with a list of assumptions and a goal.
+		If the proof is within some proof, then the conjunction of the outside
+		proof is used with the line number.
+		'''
+
 		self.ass = list(assumptions)
 		self.numToForm = {n:f for (n,f) in \
 			zip(range(lineNum, len(self.ass)+1), self.ass)}
 		vals = list(self.numToForm.values())
 		vals.extend(conjunction)
 		self.conjunction = AndFormula(*(vals))
+		self.lineNum = len(self.ass)
 		self.goal = goal
 
 	def infers(self, formula):
@@ -41,25 +63,38 @@ class Proof:
 		return result
 
 	def proves(self, formula):
-		print([f.__str__() for f in self.conjunction.eliminationList()])
 		# only works for implies formula
-		return formula.left in self.ass and formula.right in self.conjunction.eliminationList()
+		return formula.left in self.ass and formula.right in \
+			self.conjunction.eliminationList
 
 
 class AndFormula(Proof):
-	"""Formula object representing a conjunction which will serve also as a
-	proof object for nested assumption proofs. It is also used to create
-	one massive formula when each formula is proved. I.e., if A is proved, then
-	B is proved, then an next = AndFormula(A, B) would be constructed. If C is
-	then proved, then next = AndFormula(next, C).
-	"""
+	'''
+	Formula object representing a conjunction which serves as a aggregate for
+	a proof by joining formulas as one conjunction.
+	'''
 
-	def __init__(self, *formulas):
+	def __init__(self, *formulas, lineNumber = 1):
+		'''
+		Constructs an AndFormula object. If formulas contain an AndFormula,
+		it will be broken apart into elements until it is not an AndFormula so
+		that the original object is a conjunction not consisting of 
+		AndFormulas. 
+		I.e., (A * B) * (A * C) * (D -> (E * F)) = A * B * C * (D -> (E * F))
+		'''
+
 		listFormula = []
+		self.lineNumber = lineNumber
+		# self.formNumDict = { }
 		for f in list(formulas):
-			listFormula.extend(listOfAtoms(f))
+			l = listOfAtoms(f)
+			listFormula.extend(l)
+			# for a in l:
+				# self.formNumDict[a] = lineNumber
+			self.lineNumber += 1
 
 		self.formulas = list(set(listFormula))
+		self.eliminationList = list(set(listFormula))
 
 	def __str__(self):
 		return ' * '.join(f.__str__() for f in self.formulas)
@@ -80,29 +115,59 @@ class AndFormula(Proof):
 		except AttributeError:
 			return False
 
+	def append(self, formula):
+		'''
+		Appends a formula to the conjunction. If formula is AndFormula,
+		it is broken down into non conjunctions and appended.
+		'''
+
+		f = listOfAtoms(formula)
+
+		self.formulas.extend(x for x in f if x not in self.formulas)
+
+	def appendElim(self, formula):
+		'''
+		Appends a formula to the eliminationList. If the formula is AndFormula,
+		it is broken down into non conjunctions and appended.
+		'''
+
+		f = listOfAtoms(formula)
+		self.eliminationList.extend(x for x in f if x not in self.formulas)
+
 	def infers(self, formula):
 		'''
 		Validation of a proof. 
 		'''
-		# append implementations of intro validation here per type of formula
-		# E.g, self.infers(A->B), self.infers(A + B), self.infers(~A)
-		return formula in self.eliminationList()
+		# starts by finding if each element alone can infer formula, else
+		# combinations of formulas will be made into a conjunction to see if
+		# they can infer formula and so on
+		# eliminationList will be appended 
+		# result = formula in self.
 
 
-	def eliminationList(self):
-		result = self.formulas[:]
-		result.append(self)
-		max_len = len(self.formulas)
-		for L in range(2, max_len):
-			for f in combinations(self.formulas, L):
-				result.append(AndFormula(*f))
+		result = formula in self.eliminationList
+		if result:
+			self.append(formula)
+			return result
 
-		# might have a problem here when having imp within imp
-		# implies elimination here
-		for impFormula in result:
-			if type(impFormula) is ImpFormula and impFormula.left in result:
-				result.append(impFormula.right)
-		return result
+		for f in self.eliminationList:
+			if type(f) is ImpFormula and f.left in self.eliminationList:
+				self.appendElim(f.right)
+				if formula is f.right:
+					self.append(formula)
+					return True
+				# check now if formula in elimList
+		if type(formula) is AndFormula:
+			numConjs = len(formula.formulas)
+			for f in combinations(self.formulas, numConjs):
+				# f is a numConjs-tuple that needs to be AndFormula
+				x = AndFormula(*f)
+				self.appendElim(x)
+				if formula == x:
+					self.append(formula)
+					return True
+		return False
+
 
 class Formula(Proof):
 	"""Formula object representing an atom through a character."""
