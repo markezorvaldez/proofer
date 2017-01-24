@@ -94,10 +94,19 @@ class TestFormulaObjects(unittest.TestCase):
 		self.assertTrue(proof2.infers(bIc))
 		self.assertTrue(proof2.infers(self.b))
 		self.assertTrue(proof2.infers(self.c))
-		print([f == abIc for f in proof1.conjunction.formulas])
-		print([f.__str__() for f in proof1.conjunction.eliminationList])
 		self.assertTrue(proof1.infers(abIc))
 
+	def test_implies3(self):
+		bIc = nat.ImpFormula(self.b, self.c)
+		aIbIc = nat.ImpFormula(self.a, bIc)
+		abIc = nat.ImpFormula(self.ab, self.c)
+		proof1 = nat.Proof(aIbIc, goal = abIc)
+		proof2 = nat.Proof(self.ab, parent = proof1, goal = self.c)
+		# self.assertTrue(proof2.infers(self.ab))
+		self.assertTrue(proof2.infers(bIc)) # should be false since a isnt yet
+		self.assertFalse(proof2.infers(abIc))
+		self.assertTrue(proof2.infers(self.c))
+		self.assertTrue(proof1.infers(abIc))
 
 if __name__ == '__main__':
 	unittest.main()

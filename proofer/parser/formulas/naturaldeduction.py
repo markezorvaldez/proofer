@@ -46,7 +46,6 @@ class Proof:
 		if result:
 			self.numToForm[list(self.numToForm.keys())[-1]] = formula
 			if formula == self.goal:
-				print("we here for " + formula.__str__())
 				newForm = ImpFormula(AndFormula(*self.ass), self.goal)
 				try:
 					self.parent.conjunction.append(newForm)
@@ -65,7 +64,7 @@ class Proof:
 	# def assumption(self, proof):
 		
 
-class AndFormula(Proof):
+class AndFormula:
 	'''
 	Formula object representing a conjunction which serves as a aggregate for
 	a proof by joining formulas as one conjunction.
@@ -97,7 +96,7 @@ class AndFormula(Proof):
 		return ' * '.join(f.__str__() for f in self.formulas)
 
 	def __hash__(self):
-		return sum([form.__hash__() for form in self.formulas])
+		return reduce(lambda x,y: x.__hash__()*y.__hash__(), self.formulas)
 
 	def __eq__(self, other):
 		try:
@@ -134,7 +133,11 @@ class AndFormula(Proof):
 
 	def infers(self, formula):
 		'''
-		Validation of a proof. 
+		Validates a proof.
+		Finds if formula is contained in the elimination list.
+		If conjunction is A -> (B -> C) * (A * B), then B -> C infers
+		because the code will eliminate formulas (E.g., A) to see if B -> C
+		can be infered or not.
 		'''
 		# starts by finding if each element alone can infer formula, else
 		# combinations of formulas will be made into a conjunction to see if
@@ -166,8 +169,46 @@ class AndFormula(Proof):
 					return True
 		return False
 
+class OrFormula(AndFormula):
+	'''
+	Object representing a disjunction.
+	'''
 
-class Formula(Proof):
+	def __init__(self, *formulas):
+		'''
+		Constructs an OrFormula object. Since the or operator is commutative,
+		it can be initialised like an AndFormula object as above.
+		'''
+
+		listFormula = []
+		for f in list(formulas):
+			l = listOfAtoms(f)
+			listFormula.extend(l)
+		self.formulas = list(set(listFormula))
+
+	def __str__(self):
+		return  ' + '.join(f.__str__() for f in self.formulas)
+
+	def __eq__(self, other):
+		try:
+			left = list(self.formulas)
+			right = list(other.formulas)
+			try:
+				for rightFormula in right:
+					left.remove(rightFormula)
+			except ValueError:
+				return False
+			return not left
+		except AttributeError:
+			return False
+
+	def __hash__(self):
+		return sum([form.__hash__() for form in self.formulas])
+
+	def infers(self, formula):
+		return self == formula
+
+class Formula(AndFormula):
 	"""Formula object representing an atom through a character."""
 
 	def __init__(self, formula):
@@ -185,7 +226,7 @@ class Formula(Proof):
 	def infers(self, formula):
 		return self == formula
 
-class ImpFormula(Proof):
+class ImpFormula(AndFormula):
 
 	def __init__(self, left, right):
 		self.left = left
