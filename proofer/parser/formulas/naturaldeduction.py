@@ -1,5 +1,6 @@
 import sys
 from itertools import combinations, groupby
+from functools import reduce
 sys.path.insert(0, "../..")
 
 if sys.version_info[0] >= 3:
@@ -151,6 +152,7 @@ class AndFormula:
 			self.append(formula)
 			return result
 
+		# might need to refactor all of these
 		for f in self.eliminationList:
 			if type(f) is ImpFormula and f.left in self.eliminationList:
 				self.appendElim(f.right)
@@ -158,6 +160,26 @@ class AndFormula:
 					self.append(formula)
 					return True
 				# check now if formula in elimList
+			elif type(f) is OrFormula:
+				conclusion = []
+				for fo in f.formulas:
+					print(fo)
+					conclusion.extend([x.right for x in self.eliminationList \
+						if type(x) is ImpFormula and x.left == fo \
+						and x.right not in conclusion])
+				# write something here bla bla
+				print("hello")
+				print([f.__str__() for f in conclusion])
+				for fo in conclusion:
+					self.appendElim(fo)
+					self.append(fo)
+				try:
+					print("hello2")
+					print(formula)
+					if formula == conclusion[0]:
+						return reduce(lambda x,y: x&y, conclusion)
+				except IndexError:
+					pass
 		if type(formula) is AndFormula:
 			numConjs = len(formula.formulas)
 			for f in combinations(self.formulas, numConjs):

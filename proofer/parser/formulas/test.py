@@ -108,5 +108,19 @@ class TestFormulaObjects(unittest.TestCase):
 		self.assertTrue(proof2.infers(self.c))
 		self.assertTrue(proof1.infers(abIc))
 
+	def test_or_implies(self):
+		aIc = nat.ImpFormula(self.a, self.c)
+		bIc = nat.ImpFormula(self.b, self.c)
+		aOb = nat.OrFormula(self.a, self.b)
+		aObIc = nat.ImpFormula(aOb, self.c)
+		proof1 = nat.Proof(aIc, bIc, goal = aObIc)
+		proof2 = nat.Proof(aOb, parent = proof1, goal = self.c)
+		proof3 = nat.Proof(self.a, parent = proof2, goal = self.c)
+		proof4 = nat.Proof(self.b, parent = proof2, goal = self.c)
+		self.assertTrue(proof3.infers(self.c))
+		self.assertTrue(proof4.infers(self.c))
+		print([f.__str__() for f in proof2.conjunction.formulas])
+		self.assertTrue(proof2.infers(self.c))
+
 if __name__ == '__main__':
 	unittest.main()
