@@ -70,7 +70,7 @@ class AndFormula:
 	Formula object representing a conjunction which serves as a aggregate for
 	a proof by joining formulas as one conjunction.
 	'''
-
+	#problem with assumption being an AndFormula
 	def __init__(self, *formulas, lineNumber = 1):
 		'''
 		Constructs an AndFormula object. If formulas contain an AndFormula,
@@ -100,6 +100,8 @@ class AndFormula:
 		return reduce(lambda x,y: x.__hash__()*y.__hash__(), self.formulas)
 
 	def __eq__(self, other):
+		if len(self.formulas) == 1:
+			return self.formulas[0] == other
 		try:
 			left = list(self.formulas)
 			right = list(other.formulas)
@@ -145,7 +147,7 @@ class AndFormula:
 		# they can infer formula and so on
 		# eliminationList will be appended 
 		# result = formula in self.
-
+		# PROBLEM - if ~~E == ~(~E) and (~E) is an AndFormula, wrote temp sol
 
 		result = formula in self.eliminationList
 		if result:
@@ -160,26 +162,39 @@ class AndFormula:
 					self.append(formula)
 					return True
 				# check now if formula in elimList
+			elif type(f) is ImpFormula and f.right == FalseFormula():
+				x = NotFormula(f.left)
+				self.appendElim(x)
+				if x == formula:
+					self.append(x)
+					return True
 			elif type(f) is OrFormula:
 				conclusion = []
 				for fo in f.formulas:
-					print(fo)
 					conclusion.extend([x.right for x in self.eliminationList \
 						if type(x) is ImpFormula and x.left == fo \
 						and x.right not in conclusion])
-				# write something here bla bla
-				print("hello")
-				print([f.__str__() for f in conclusion])
 				for fo in conclusion:
 					self.appendElim(fo)
 					self.append(fo)
 				try:
-					print("hello2")
-					print(formula)
 					if formula == conclusion[0]:
-						return reduce(lambda x,y: x&y, conclusion)
+						return reduce(lambda x,y: x and y, conclusion)
 				except IndexError:
 					pass
+			elif type(f) is NotFormula and f.formula in self.eliminationList:
+				x = FalseFormula()
+				self.appendElim(x)
+				if formula == x:
+					self.append(x)
+					return True
+			elif type(f) is NotFormula and type(f.formula) is NotFormula:
+				x = f.formula.formula
+				self.appendElim(x)
+				if formula == x:
+					self.append(x)
+					return True
+
 		if type(formula) is AndFormula:
 			numConjs = len(formula.formulas)
 			for f in combinations(self.formulas, numConjs):
@@ -189,7 +204,16 @@ class AndFormula:
 				if formula == x:
 					self.append(formula)
 					return True
+
+		if type(formula) is OrFormula:
+			for f in formula.formulas:
+				if f in self.eliminationList:
+					self.appendElim(formula)
+					self.append(formula)
+					return True
 		return False
+
+		# also implement falsity implies everything
 
 class OrFormula(AndFormula):
 	'''
@@ -209,7 +233,7 @@ class OrFormula(AndFormula):
 		self.formulas = list(set(listFormula))
 
 	def __str__(self):
-		return  ' + '.join(f.__str__() for f in self.formulas)
+		return '(' + ' + '.join(f.__str__() for f in self.formulas) + ')'
 
 	def __eq__(self, other):
 		try:
@@ -265,6 +289,41 @@ class ImpFormula(AndFormula):
 			return (self.left == other.left) and (self.right == other.right)
 		except AttributeError:
 			return False
+
+	def infers(self, formula):
+		return self == formula
+
+class NotFormula(AndFormula):
+
+	def __init__(self, formula):
+		self.formula = formula
+
+	def __str__(self):
+		return '~' + self.formula.__str__()
+
+	def __hash__(self):
+		return -1*self.formula.__hash__()
+
+	def __eq__(self, other):
+		if type(other) is AndFormula:
+			return other.__eq__(self)
+		return type(other) is NotFormula and self.formula == other.formula
+
+	def infers(self, formula):
+		return self == formula
+
+class FalseFormula(AndFormula):
+	# def __init__(self):
+		# self.formula = self
+
+	def __str__(self):
+		return "FALSITY"
+
+	def __hash__(self):
+		return -1
+
+	def __eq__(self, other):
+		return type(other) is FalseFormula
 
 	def infers(self, formula):
 		return self == formula
