@@ -79,6 +79,7 @@ class AndFormula:
 		AndFormulas. 
 		I.e., (A * B) * (A * C) * (D -> (E * F)) = A * B * C * (D -> (E * F))
 		'''
+		# conjunction should not be broken down 
 
 		listFormula = []
 		self.lineNumber = lineNumber
@@ -97,7 +98,7 @@ class AndFormula:
 		return ' * '.join(f.__str__() for f in self.formulas)
 
 	def __hash__(self):
-		return reduce(lambda x,y: x.__hash__()*y.__hash__(), self.formulas)
+		return reduce(lambda x,y: x*y, [z.__hash__() for z in self.formulas])
 
 	def __eq__(self, other):
 		if len(self.formulas) == 1:
@@ -194,6 +195,10 @@ class AndFormula:
 				if formula == x:
 					self.append(x)
 					return True
+			elif type(f) is FalseFormula:
+				self.appendElim(formula)
+				self.append(formula)
+				return True
 
 		if type(formula) is AndFormula:
 			numConjs = len(formula.formulas)
