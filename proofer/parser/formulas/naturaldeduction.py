@@ -362,3 +362,17 @@ class FalseFormula:
 
 	def infers(self, formula):
 		return self == formula
+
+class TrueFormula:
+
+	def __str__(self):
+		return 'TRUTH'
+
+	def __hash__(self):
+		return 1
+
+	def __eq__(self, other):
+		return type(other) is TrueFormula
+
+	def infers(self, formula):
+		return self == formula

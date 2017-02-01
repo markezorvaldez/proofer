@@ -1,7 +1,8 @@
 import sys
 import unittest
 import naturaldeduction as nat
-
+from naturaldeduction import Proof, AndFormula, Formula, \
+	OrFormula, ImpFormula, NotFormula, FalseFormula, TrueFormula
 class TestFormulaObjects(unittest.TestCase):
 	"""Test suite for testing formula objects and its derivatives."""
 	# might have problems because infers also appends objects
@@ -203,5 +204,44 @@ class TestFormulaObjects(unittest.TestCase):
 		self.assertTrue(proof1.infers(C))
 		# infers(C) should work, just implement
 
+	def test_example_lemma(self):
+		F = FalseFormula()
+		a = self.a
+		na = NotFormula(a)
+		aOna = OrFormula(a, na)
+		NaOna = NotFormula(aOna)
+		proof = Proof(TrueFormula(), goal = aOna)
+		proof1 = Proof(NaOna, parent = proof,  goal = F)
+		proof2 = Proof(a, parent = proof1, goal = F)
+		self.assertTrue(proof2.infers(aOna))
+		self.assertTrue(proof2.infers(F))
+		self.assertTrue(proof1.infers(na))
+		self.assertTrue(proof1.infers(aOna))
+		self.assertTrue(proof1.infers(F))
+		self.assertTrue(proof.infers(NotFormula(NaOna)))
+		self.assertTrue(proof.infers(aOna))
+		# print(proof.conjunction)
+
+	def test_example_piercelaw(self):
+		a = self.a
+		b = self.b
+		aIb = ImpFormula(a, b)
+		aIbIa = ImpFormula(aIb, a)
+		aONa = OrFormula(a, NotFormula(a))
+		F = FalseFormula()
+		proof1 = Proof(TrueFormula(), goal = ImpFormula(aIbIa, a))
+		proof2 = Proof(aIbIa, OrFormula(a, NotFormula(a)), parent = proof1, \
+			goal = a)
+		proof2_1 = Proof(a, parent = proof2, goal = a)
+		self.assertTrue(proof2_1.infers(a))
+		proof2_2 = Proof(NotFormula(a), parent = proof2, goal = a)
+		proof2_2_1 = Proof(a, parent = proof2_2, goal = b)
+		self.assertTrue(proof2_2_1.infers(F))
+		self.assertTrue(proof2_2_1.infers(b))
+		self.assertTrue(proof2_2.infers(aIb))
+		self.assertTrue(proof2_2.infers(a))
+		self.assertTrue(proof2.infers(a))
+		print(proof1.conjunction)
+		self.assertTrue(proof1.infers(ImpFormula(aIbIa, a)))
 if __name__ == '__main__':
 	unittest.main()
