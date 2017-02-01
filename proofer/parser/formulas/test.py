@@ -200,7 +200,7 @@ class TestFormulaObjects(unittest.TestCase):
 		# problem is that conjunction is being broken down which shouldn't be
 		#
 		self.assertTrue(proof2.infers(F))
-		self.assertTrue(proof1.infers(nat.NotFormula(NC)))
+		self.assertTrue(proof1.infers(C))
 		# infers(C) should work, just implement
 
 if __name__ == '__main__':

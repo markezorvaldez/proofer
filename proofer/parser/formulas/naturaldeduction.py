@@ -70,7 +70,14 @@ class AndFormula:
 	Formula object representing a conjunction which serves as a aggregate for
 	a proof by joining formulas as one conjunction.
 	'''
+	
 	#problem with assumption being an AndFormula
+	# def __new__(cls, *formulas, lineNumber = 1):
+	# 	if len(list(formulas)) == 1:
+	# 		return list(formulas)[0]
+	# 	else:
+	# 		return super(AndFormula, cls).__new__(cls)
+
 	def __init__(self, *formulas, lineNumber = 1):
 		'''
 		Constructs an AndFormula object. If formulas contain an AndFormula,
@@ -198,6 +205,12 @@ class AndFormula:
 			elif type(f) is NotFormula and type(f.formula) is AndFormula:
 				a = f.formula
 				l = len(a.formulas)
+				if l == 1 and type(a.formulas[0]) is NotFormula:
+					z = a.formulas[0].formula
+					self.appendElim(z)
+					if formula == z:
+						self.append(z)
+						return True
 				x = [a==AndFormula(*b) for b in combinations(self.formulas, l)]
 				y = reduce(lambda g,h: g or h, x)
 				if y:
@@ -229,7 +242,7 @@ class AndFormula:
 
 		# also implement falsity implies everything
 
-class OrFormula(AndFormula):
+class OrFormula:
 	'''
 	Object representing a disjunction.
 	'''
@@ -268,7 +281,7 @@ class OrFormula(AndFormula):
 	def infers(self, formula):
 		return self == formula
 
-class Formula(AndFormula):
+class Formula:
 	"""Formula object representing an atom through a character."""
 
 	def __init__(self, formula):
@@ -286,7 +299,7 @@ class Formula(AndFormula):
 	def infers(self, formula):
 		return self == formula
 
-class ImpFormula(AndFormula):
+class ImpFormula:
 
 	def __init__(self, left, right):
 		self.left = left
@@ -307,10 +320,18 @@ class ImpFormula(AndFormula):
 	def infers(self, formula):
 		return self == formula
 
-class NotFormula(AndFormula):
+class NotFormula:
 
 	def __init__(self, formula):
 		self.formula = formula
+
+	# def __new__(cls, formula):
+	# 	if type(formula) is NotFormula:
+	# 		print("HERER")
+	# 		C = type(formula.formula)
+	# 		return C.C(formula)
+	# 	else:
+	# 		return cls.__init__(cls, formula)
 
 	def __str__(self):
 		return '~' + self.formula.__str__()
@@ -326,7 +347,7 @@ class NotFormula(AndFormula):
 	def infers(self, formula):
 		return self == formula
 
-class FalseFormula(AndFormula):
+class FalseFormula:
 	# def __init__(self):
 		# self.formula = self
 
