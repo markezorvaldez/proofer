@@ -195,6 +195,15 @@ class AndFormula:
 				if formula == x:
 					self.append(x)
 					return True
+			elif type(f) is NotFormula and type(f.formula) is AndFormula:
+				a = f.formula
+				l = len(a.formulas)
+				x = [a==AndFormula(*b) for b in combinations(self.formulas, l)]
+				y = reduce(lambda g,h: g or h, x)
+				if y:
+					self.appendElim(FalseFormula())
+					self.append(FalseFormula())
+					return True
 			elif type(f) is FalseFormula:
 				self.appendElim(formula)
 				self.append(formula)

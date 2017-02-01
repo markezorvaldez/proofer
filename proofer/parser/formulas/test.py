@@ -193,13 +193,15 @@ class TestFormulaObjects(unittest.TestCase):
 		self.assertTrue(proof2_2.infers(B))
 		self.assertTrue(proof2.infers(B))
 		self.assertTrue(proof2.infers(BANC))
-		print(BANC)
-		print(type(BANC))
-		print(proof2.conjunction)
-		print([f.__str__() for f in proof2.conjunction.eliminationList])
+		# print(BANC)
+		# print(type(BANC))
+		# print(proof2.conjunction)
+		# print([f.__str__() for f in proof2.conjunction.eliminationList])
 		# problem is that conjunction is being broken down which shouldn't be
 		#
-		# self.assertTrue(proof2.infers(F))
+		self.assertTrue(proof2.infers(F))
+		self.assertTrue(proof1.infers(nat.NotFormula(NC)))
+		# infers(C) should work, just implement
 
 if __name__ == '__main__':
 	unittest.main()
