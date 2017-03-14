@@ -223,8 +223,8 @@ class TestFormulaObjects(unittest.TestCase):
 		# print(proof.conjunction)
 
 	def test_example_piercelaw(self):
-		a = self.a
-		b = self.b
+		a = Formula('A')
+		b = Formula('B')
 		aIb = ImpFormula(a, b)
 		aIbIa = ImpFormula(aIb, a)
 		aONa = OrFormula(a, NotFormula(a))

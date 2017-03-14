@@ -12,5 +12,8 @@ class Proof(models.Model):
 
 	def check_proof(self):
 		(result) = parse_premise(self.premise)
-		self.proof += '\n' + str(result)
-		#for line in self.proof.splitlines():
+		for line in self.proof.splitlines():
+			result = parse_premise(line)
+			print(result)
+			if not result:
+				self.proof += ' ---------CANNOT INFER THIS LINE---------'

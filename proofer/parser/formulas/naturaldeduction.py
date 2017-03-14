@@ -60,6 +60,15 @@ class Proof:
 		return formula.left in self.ass and formula.right in \
 			self.conjunction.eliminationList
 
+	def end(self):
+		imp = ImpFormula(AndFormula(*self.ass), self.conjunction.formulas[-1])
+		try:
+			self.parent.conjunction.append(imp)
+			self.parent.conjunction.appendElim(imp)
+		except AttributeError:
+			print('attribute error')
+			pass
+
 	# think of an architecture of nesting proofs
 	# can do observer 
 	# def assumption(self, proof):
