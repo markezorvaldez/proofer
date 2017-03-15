@@ -10,6 +10,7 @@ from formulas.naturaldeduction import Formula, AndFormula, Proof, ImpFormula,OrF
 
 
 tokens = (
+    'COMMA',
     'PROVE',
     'ASS',
     'END',
@@ -22,6 +23,7 @@ tokens = (
     )
 
 # Tokens
+t_COMMA   = r','
 t_PROVE   = r'=>'
 t_ASS     = r'ASS'
 t_END     = r'END'
@@ -52,9 +54,9 @@ lexer = lex.lex()
 # Parsing rules
 
 precedence = (
-    ('left','AND'),
     ('left', 'IMP'),
     ('left', 'OR'),
+    ('left','AND'),
     ('right', 'NOT')
     )
 
@@ -75,6 +77,13 @@ def p_statement_ass(t):
     andFormula = True
     proof = Proof(t[1], parent = proof)
 
+def p_expressions_exprList(t):
+    'expressions : expression COMMA expressions'
+    t[0] = [t[1]] + t[3]
+
+def p_expression_expr(t):
+    'expressions : expression'
+    t[0] = [t[1]]
 
 def p_statement_expr(t):
     # here we will do infer checks
