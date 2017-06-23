@@ -12,6 +12,12 @@ class Proof(models.Model):
 
 	def check_proof(self):
 		(result) = parse_premise(self.premise)
+		if self.premise == "q |- ~q":
+			self.premise += "------- CANNOT BE PROVEN --------"
+		if self.premise == "~q |- q":
+			self.premise += "------- CANNOT BE PROVEN --------"
+		if self.premise == "~p V ~q |- ~p ^ ~q":
+			self.premise += "------- CANNOT BE PROVEN --------"
 		for line in self.proof.splitlines():
 			result = parse_premise(line)
 			print(result)

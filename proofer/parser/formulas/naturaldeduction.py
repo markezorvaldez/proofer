@@ -69,6 +69,10 @@ class Proof:
 			print('attribute error')
 			pass
 
+	def provable(self):
+
+		return False
+
 	# think of an architecture of nesting proofs
 	# can do observer 
 	# def assumption(self, proof):
@@ -109,6 +113,7 @@ class AndFormula:
 
 		self.formulas = list(set(listFormula))
 		self.eliminationList = list(set(listFormula))
+
 
 	def __str__(self):
 		return ' * '.join(f.__str__() for f in self.formulas)
@@ -271,6 +276,10 @@ class OrFormula:
 	def __str__(self):
 		return '(' + ' + '.join(f.__str__() for f in self.formulas) + ')'
 
+	def truthTable(self):
+		listOfForms = list(self.formulas)
+		
+
 	def __eq__(self, other):
 		try:
 			left = list(self.formulas)
@@ -296,6 +305,9 @@ class Formula:
 	def __init__(self, formula):
 		self.formula = formula
 
+	def truthTable(self):
+		return [1, 0]
+
 	def __str__(self):
 		return self.formula
 
@@ -313,6 +325,15 @@ class ImpFormula:
 	def __init__(self, left, right):
 		self.left = left
 		self.right = right
+
+	def truthTable(self):
+		lt = self.left.truthTable
+		rt = self.right.truthTable
+		r = []
+		for t in lt:
+			r.extend([(not t) or ts for ts in rt])
+
+		return r
 
 	def __str__(self):
 		return '('+' -> '.join([self.left.__str__(), self.right.__str__()])+')'
@@ -341,6 +362,8 @@ class NotFormula:
 	# 		return C.C(formula)
 	# 	else:
 	# 		return cls.__init__(cls, formula)
+	def truthTable(self):
+		return [not x for x in self.formula.truthTable]
 
 	def __str__(self):
 		return '~' + self.formula.__str__()
@@ -360,8 +383,12 @@ class FalseFormula:
 	# def __init__(self):
 		# self.formula = self
 
+	def truthTable(self):
+		return [0]
+
 	def __str__(self):
 		return "FALSITY"
+
 
 	def __hash__(self):
 		return -1
@@ -373,6 +400,9 @@ class FalseFormula:
 		return self == formula
 
 class TrueFormula:
+
+	def truthTable(self):
+		return [1]
 
 	def __str__(self):
 		return 'TRUTH'
